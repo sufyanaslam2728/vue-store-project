@@ -30,6 +30,41 @@
         Products in "{{ selectedCategory.name }}"
       </h2>
 
+      <div class="relative inline-block text-left mb-6">
+        <button
+          type="button"
+          class="inline-flex justify-between items-center px-6 py-2 rounded bg-blue-500 text-white font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+          @click="toggleDropdown"
+        >
+          <span>Sort Products</span>
+          <i class="fas fa-caret-down ml-2"></i>
+        </button>
+        <!-- Dropdown menu -->
+        <div
+          v-if="dropdownOpen"
+          class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none"
+        >
+          <div class="py-1">
+            <button
+              @click="sortProducts('price')"
+              class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+            >
+              Sort by Price
+              <i v-if="priceSortDirection === 'asc'" class="fas fa-arrow-up ml-2"></i>
+              <i v-if="priceSortDirection === 'desc'" class="fas fa-arrow-down ml-2"></i>
+            </button>
+            <button
+              @click="sortProducts('title')"
+              class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+            >
+              Sort by Name
+              <i v-if="titleSortDirection === 'asc'" class="fas fa-arrow-up ml-2"></i>
+              <i v-if="titleSortDirection === 'desc'" class="fas fa-arrow-down ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="paginatedProducts.length">
         <table
           class="min-w-full bg-white dark:bg-gray-800 rounded-md shadow overflow-hidden text-sm"
@@ -98,10 +133,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useProductStore } from '@/stores/productStore'
 import FavouriteButton from '../components/FavouriteButton.vue'
-import api from '@/api.js' // Import api.js for API calls
+import api from '@/api.js'
 
 const categories = ref([])
 const selectedCategory = ref(null)
@@ -109,8 +144,13 @@ const paginatedProducts = ref([])
 const currentPage = ref(1)
 const itemsPerPage = 10
 const hasNextPage = ref(false)
+const priceSortDirection = ref('asc')
+const titleSortDirection = ref('asc')
+const dropdownOpen = ref(false)
 
 const store = useProductStore()
+
+const isMounted = ref(true)
 
 const toggleFavorite = (product) => {
   store.toggleFavorite(product)
@@ -123,10 +163,16 @@ const isFavorite = (product) => {
 onMounted(async () => {
   try {
     const { data } = await api.get('/categories')
-    categories.value = data
+    if (isMounted.value) {
+      categories.value = data
+    }
   } catch (error) {
     console.error('Error fetching categories:', error)
   }
+})
+
+onBeforeUnmount(() => {
+  isMounted.value = false
 })
 
 const selectCategory = async (category) => {
@@ -138,7 +184,6 @@ const selectCategory = async (category) => {
 const fetchProducts = async () => {
   if (!selectedCategory.value) return
   const offset = (currentPage.value - 1) * itemsPerPage
-
   try {
     const { data } = await api.get(`/categories/${selectedCategory.value.id}/products`, {
       params: {
@@ -146,8 +191,10 @@ const fetchProducts = async () => {
         limit: itemsPerPage + 1,
       },
     })
-    hasNextPage.value = data.length > itemsPerPage
-    paginatedProducts.value = data.slice(0, itemsPerPage)
+    if (isMounted.value) {
+      hasNextPage.value = data.length > itemsPerPage
+      paginatedProducts.value = data.slice(0, itemsPerPage)
+    }
   } catch (error) {
     console.error('Error fetching products:', error)
   }
@@ -165,5 +212,26 @@ const prevPage = async () => {
     currentPage.value--
     await fetchProducts()
   }
+}
+
+const sortProducts = (key) => {
+  if (key === 'price') {
+    priceSortDirection.value = priceSortDirection.value === 'asc' ? 'desc' : 'asc'
+    paginatedProducts.value.sort((a, b) =>
+      priceSortDirection.value === 'asc' ? a[key] - b[key] : b[key] - a[key],
+    )
+  } else if (key === 'title') {
+    titleSortDirection.value = titleSortDirection.value === 'asc' ? 'desc' : 'asc'
+    paginatedProducts.value.sort((a, b) =>
+      titleSortDirection.value === 'asc'
+        ? a[key].localeCompare(b[key])
+        : b[key].localeCompare(a[key]),
+    )
+  }
+  dropdownOpen.value = false // Close the dropdown after sorting
+}
+
+const toggleDropdown = () => {
+  dropdownOpen.value = !dropdownOpen.value
 }
 </script>

@@ -1,6 +1,7 @@
 <template>
   <div class="max-w-4xl mx-auto px-4 py-8">
     <div
+      v-if="product"
       class="bg-white rounded-2xl shadow-md overflow-hidden md:flex md:space-x-6 dark:bg-gray-800 dark:text-white"
     >
       <div class="md:w-1/2 bg-gray-100 flex items-center justify-center p-6 dark:bg-gray-700">
@@ -35,22 +36,27 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import api from '@/api.js'
 import { useProductStore } from '../stores/productStore'
 
 const route = useRoute()
-const product = ref({})
+const router = useRouter()
+const product = ref(null)
 const store = useProductStore()
-
 
 onMounted(async () => {
   try {
     const { data } = await api.get(`/products/${route.params.id}`)
-    product.value = data
-    store.visitProduct(data)
+    if (data) {
+      product.value = data
+      store.visitProduct(data)
+    } else {
+      router.push({ name: 'NotFound' })
+    }
   } catch (error) {
     console.error('Error fetching product:', error)
+    router.push({ name: 'NotFound' })
   }
 })
 </script>
