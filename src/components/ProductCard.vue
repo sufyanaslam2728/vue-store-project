@@ -1,6 +1,6 @@
 <template>
   <div
-    class="block bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-200 group"
+    class="block bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-200 group"
   >
     <div class="relative">
       <FavouriteButton
@@ -10,7 +10,7 @@
       />
 
       <router-link :to="`/product/${product.id}`" @click="handleLinkClick">
-        <div class="h-52 bg-gray-50 flex items-center justify-center">
+        <div class="h-52 bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
           <img
             :src="productImage"
             alt="Product Image"

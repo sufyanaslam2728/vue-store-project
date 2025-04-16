@@ -4,8 +4,19 @@
 
 @import './base.css';
 
+html {
+  --bg: #f9f9f9;
+  --text: #111;
+}
+
+html.dark {
+  --bg: #111827;
+  --text: #f9f9f9;
+}
+
 body {
-  @apply font-sans bg-gray-50 text-gray-800;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 #app {
@@ -23,9 +34,18 @@ a,
   padding: 3px;
 }
 
+.dark a,
+.dark .green {
+  color: hsla(160, 100%, 70%, 1);
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
+  }
+
+  .dark a:hover {
+    background-color: hsla(160, 100%, 70%, 0.2);
   }
 }
 
