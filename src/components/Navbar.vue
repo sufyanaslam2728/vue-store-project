@@ -6,15 +6,6 @@
       <div class="flex justify-between items-center w-full md:w-auto">
         <router-link to="/" class="text-xl font-bold text-primary">VueShop 🛍️</router-link>
       </div>
-      <!-- <div class="flex-1 w-full md:w-auto">
-        <input
-          v-model="search"
-          @input="emitSearch"
-          type="text"
-          placeholder="Search products..."
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-      </div> -->
       <div class="flex space-x-4 text-sm font-medium">
         <router-link to="/" class="text-gray-700 hover:text-primary">Home</router-link>
         <router-link to="/categories" class="text-gray-700 hover:text-primary"
